@@ -11,8 +11,8 @@ class $modify(GJBaseGameLayer) {
         bool holding[2] = {false, false};
     };
 
-    void processCommands(float dt) {
-        GJBaseGameLayer::processCommands(dt);
+    void processCommands( float dt, bool p1, bool p2 ) {
+        GJBaseGameLayer::processCommands( dt, p1, p2 );
 
         auto& g = Global::get();
 

@@ -1,3 +1,8 @@
+# v2.4.1.1
+
+* 2.2081
+* added bugs (fix later)
+
 # v2.4.1
 
 * Added Auto Clicker keybind.

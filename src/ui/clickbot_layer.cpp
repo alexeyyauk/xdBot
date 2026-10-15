@@ -19,7 +19,11 @@ void ClickbotLayer::updateLabels() {
 
 }
 
-bool ClickbotLayer::setup() {
+bool ClickbotLayer::init( float width, float height, char const* bgTexture )
+{
+
+	if ( !geode::Popup::init( width, height, bgTexture ) ) return false;
+
 	setTitle("ClickBot");
 	m_title->setPositionY(m_title->getPositionY() + 5);
 	
@@ -285,9 +289,9 @@ bool ClickbotLayer::setup() {
 	return true;
 }
 
-ClickSettingsLayer* ClickSettingsLayer::create(std::string button, geode::Popup<>* layer) {
+ClickSettingsLayer* ClickSettingsLayer::create(std::string button, geode::Popup* layer) {
 	ClickSettingsLayer* ret = new ClickSettingsLayer();
-	if (ret->initAnchored(250, 173, button, layer, Utils::getTexture().c_str())) {
+	if (ret->init(250, 173, button, layer, Utils::getTexture().c_str())) {
 		ret->autorelease();
 		return ret;
 	}
@@ -296,7 +300,11 @@ ClickSettingsLayer* ClickSettingsLayer::create(std::string button, geode::Popup<
 	return nullptr;
 }
 
-bool ClickSettingsLayer::setup(std::string button, geode::Popup<>* layer) {
+bool ClickSettingsLayer::init( float width, float height, std::string button, geode::Popup* layer, char const* bgTexture )
+{
+
+	if ( !geode::Popup::init( width, height, bgTexture ) ) return false;
+
 	cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;
     m_mainLayer->setPosition(m_mainLayer->getPosition() - offset);
     m_closeBtn->setPosition(m_closeBtn->getPosition() + offset);
@@ -400,11 +408,16 @@ void ClickSettingsLayer::onSelectFile(CCObject*) {
 	file::FilePickOptions fileOptions;
 	textFilter.description = "Macro Files";
 	textFilter.files = { "*.mp3", "*.ogg" };
+	fileOptions.defaultPath = Mod::get()->getResourcesDir();
 	fileOptions.filters.push_back(textFilter);
 
-	file::pick(file::PickMode::OpenFile, { Mod::get()->getResourcesDir(), { textFilter } }).listen([this](Result<std::filesystem::path>* res) {
-		if (res->isOk()) {
-			std::filesystem::path path = res->unwrapOrDefault();
+	async::spawn(
+		file::pick(file::PickMode::OpenFile, fileOptions),
+		[this](Result<std::optional<std::filesystem::path>> result) {
+			if ( !result.isOk() ) return;
+			const auto& selectedPath = result.unwrap();
+			if ( !selectedPath ) return;
+			auto path = *selectedPath;
 
 			filenameLabel->setString(path.filename().string().c_str());
 
@@ -412,7 +425,6 @@ void ClickSettingsLayer::onSelectFile(CCObject*) {
 			saveSettings();
 
 			static_cast<ClickbotLayer*>(clickbotLayer)->updateLabels();
-		}
 		});
 }
 

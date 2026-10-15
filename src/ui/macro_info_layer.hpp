@@ -2,13 +2,13 @@
 #include "../includes.hpp"
 #include <Geode/ui/MDTextArea.hpp>
 
-class MacroInfoLayer : public geode::Popup<> {
+class MacroInfoLayer : public geode::Popup {
 
 public:
 
     static MacroInfoLayer* create() {
         MacroInfoLayer* ret = new MacroInfoLayer();
-        if (ret->initAnchored(417, 268, "square01_001.png", CCRectZero)) {
+        if (ret->init(417, 268, "square01_001.png", CCRectZero)) {
             ret->autorelease();
             return ret;
         }
@@ -18,7 +18,10 @@ public:
 
 private:
 
-    bool setup() override {
+    bool init( float w, float h, const char* bgTexture, const cocos2d::CCRect& bgRect )
+    {
+        if ( !geode::Popup::init( w, h, bgTexture, bgRect ) ) return false;
+
         setTitle("Current Macro");
         auto& g = Global::get();
 

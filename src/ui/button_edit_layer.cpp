@@ -168,7 +168,9 @@ void ButtonEditLayer::updateOpacity(CCObject*) {
     updateSelectedLabels();
 }
 
-bool ButtonEditLayer::setup() {
+bool ButtonEditLayer::init( float w, float h, char const* bgTexture )
+{
+    if ( !geode::Popup::init( w, h, bgTexture ) ) return false;
     mod = Mod::get();
 
     cocos2d::CCPoint offset = (CCDirector::sharedDirector()->getWinSize() - m_mainLayer->getContentSize()) / 2;

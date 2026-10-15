@@ -11,11 +11,11 @@ struct InputText {
     std::string action;
 };
 
-class MacroEditLayer : public geode::Popup<>, public TextInputDelegate {
+class MacroEditLayer : public geode::Popup, public TextInputDelegate {
 
 private:
     
-    bool setup();
+    bool init( float w, float h, char const* bgTexture );
 
     void onClose(CCObject*) override;
 
@@ -26,6 +26,8 @@ private:
     void textChanged(CCTextInputNode* input) override;
 
     ~MacroEditLayer() override;
+
+    void updateHoverFromMouse(float dt);
     
 public:
 

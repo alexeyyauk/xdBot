@@ -1,7 +1,7 @@
 #include "../includes.hpp"
 #include "record_layer.hpp"
 
-class RenderPresetsLayer : public geode::Popup<> {
+class RenderPresetsLayer : public geode::Popup {
 
 public:
 
@@ -9,7 +9,11 @@ public:
 
 private:
 
-    bool setup() override {
+    bool init( float w, float h, char const* bgTexture )
+    {
+
+        if ( !Popup::init( w, h, bgTexture ) ) return false;
+
         setTitle("Render Presets");
 
         CCScale9Sprite* bg = CCScale9Sprite::create("square02b_001.png", { 0, 0, 80, 80 });

@@ -1,29 +1,15 @@
 #include "macro_editor.hpp"
 #include "record_layer.hpp"
 
-#include <Geode/modify/CCEGLView.hpp>
 #include <Geode/modify/FLAlertLayer.hpp>
 
 MacroEditLayer* editLayer = nullptr;
 
 #ifdef GEODE_IS_WINDOWS
 
-class $modify(CCEGLView) {
-    void onGLFWMouseMoveCallBack(GLFWwindow* v1, double v2, double v3) {
-        CCEGLView::onGLFWMouseMoveCallBack(v1, v2, v3);
-
-        if (!editLayer) return;
-
-        CCScene* scene = CCDirector::get()->getRunningScene();
-        if (MacroEditLayer* layer = scene->getChildByType<MacroEditLayer>(0))
-            editLayer = layer;
-        else
-            return;
-
-        editLayer->updateHover(getMousePos());
-        
-    }
-};
+void MacroEditLayer::updateHoverFromMouse(float) {
+    updateHover(geode::cocos::getMousePos());
+}
 
 #endif
 
@@ -113,7 +99,14 @@ void MacroEditLayer::updateHover(cocos2d::CCPoint pos) {
     stopHovering();
 }
 
-bool MacroEditLayer::setup() {
+bool MacroEditLayer::init( float w, float h, char const* bgTexture )
+{
+    if ( !geode::Popup::init( w, h, bgTexture ) ) return false;
+
+#ifdef GEODE_IS_WINDOWS
+    schedule(schedule_selector(MacroEditLayer::updateHoverFromMouse), 0.02f);
+#endif
+
     Utils::setBackgroundColor(m_bgSprite);
     
     CCMenu* menu = CCMenu::create();
@@ -544,7 +537,10 @@ void MacroEditLayer::textChanged(CCTextInputNode* input) {
     if (text == "") return;
 
     if (input == editLayer->pageInput->getInputNode()) {
-        int page = std::stoi(text);
+        auto result = geode::utils::numFromString<int>(text);
+        if (!result.isOk()) return;
+
+        int page = result.unwrap();
 
         if (page <= 0) return;
 
@@ -555,7 +551,10 @@ void MacroEditLayer::textChanged(CCTextInputNode* input) {
     }
 
     if (input == editLayer->frameInput->getInputNode()) {
-        int frame = std::stoi(text);
+        auto result = geode::utils::numFromString<int>(text);
+        if (!result.isOk()) return;
+
+        int frame = result.unwrap();
 
         editLayer->changeSelectedInputFrame(frame, false);
 
@@ -887,27 +886,22 @@ void MacroEditLayer::onSave(CCObject*) {
             onClose(nullptr);
 
             CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
-            CCObject* child;
-            CCARRAY_FOREACH(children, child) {
+            for (auto child : CCArrayExt<CCNode*>(children)) {
                 if (RecordLayer* layer = typeinfo_cast<RecordLayer*>(child)) {
-                    layer->keyBackClicked();
-                    break;
+                layer->onClose(nullptr);
+                break;
                 }
             }
 
             RecordLayer::openMenu(true);
             MacroEditLayer::open(true);
 
-            Loader::get()->queueInMainThread([] {
-                CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
-                CCObject* child;
-                CCARRAY_FOREACH(children, child) {
-                    if (MacroEditLayer* layer = typeinfo_cast<MacroEditLayer*>(child)) {
-                        editLayer = layer;
-                        break;
-                    }
+            for (auto child : CCArrayExt<CCNode*>(children)) {
+                if (MacroEditLayer* layer = typeinfo_cast<MacroEditLayer*>(child)) {
+                    editLayer = layer;
+                    break;
                 }
-            });
+            }
 
             Notification::create("Applied", NotificationIcon::Success)->show();
         }
@@ -953,15 +947,14 @@ void MacroEditLayer::onClear(CCObject*) {
 }
 
 void MacroEditLayer::onMerge(CCObject*) {
-    geode::Popup<>* layer = nullptr;
+    geode::Popup* layer = nullptr;
     if (Global::get().layer)
-        layer = typeinfo_cast<geode::Popup<>*>(Global::get().layer);
+        layer = typeinfo_cast<geode::Popup*>(Global::get().layer);
     else {
         CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
-        CCObject* child;
-        CCARRAY_FOREACH(children, child) {
-            if (typeinfo_cast<RecordLayer*>(child)) {
-                layer = typeinfo_cast<geode::Popup<>*>(child);
+        for (auto child : CCArrayExt<CCNode*>(children)) {
+            if (RecordLayer* recordLayer = typeinfo_cast<RecordLayer*>(child)) {
+                layer = recordLayer;
                 break;
             }
         }

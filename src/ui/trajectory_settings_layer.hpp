@@ -1,7 +1,7 @@
 #include "../includes.hpp"
 #include "../hacks/show_trajectory.hpp"
 
-class TrajectorySettingsLayer : public geode::Popup<>, public ColorPickPopupDelegate, public TextInputDelegate {
+class TrajectorySettingsLayer : public geode::Popup, public TextInputDelegate {
 
 public:
 
@@ -18,7 +18,10 @@ private:
 
 	TextInput* input = nullptr;
 	
-    bool setup() override {
+    bool init( float w, float h, char const* bgTexture )
+    {
+    	if ( !geode::Popup::init( w, h, bgTexture ) ) return false;
+
         setTitle("Show Trajectory");
 
     	Utils::setBackgroundColor(m_bgSprite);
@@ -120,11 +123,11 @@ private:
 		ColorChannelSprite* color = static_cast<CCNode*>(obj)->getTag() == 1 ? color1 : color2;
 		ColorPickPopup* popup = ColorPickPopup::create(color->getColor());
 		popup->setColorTarget(color);
-		popup->setDelegate(this);
+    	popup->setCallback([this](cocos2d::ccColor4B const& newColor) {this->updateColor(newColor);});
 		popup->show();
 	}
 
-	void updateColor(const cocos2d::ccColor4B&) override {
+	void updateColor(const cocos2d::ccColor4B&) {
 		ShowTrajectory& t = ShowTrajectory::get();
 		t.color1 = ccc4FFromccc3B(color1->getColor());
 		t.color2 = ccc4FFromccc3B(color2->getColor());

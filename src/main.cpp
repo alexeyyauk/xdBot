@@ -10,7 +10,7 @@
 
 $execute {
 
-  geode::listenForSettingChanges("macro_accuracy", +[](std::string value) {
+  geode::listenForSettingChanges<std::string>("macro_accuracy", +[](const std::string &value) {
     auto& g = Global::get();
     
     g.frameFixes = false;
@@ -20,15 +20,15 @@ $execute {
     if (value == "Input Fixes") g.inputFixes = true;
   });
 
-  geode::listenForSettingChanges("frame_fixes_limit", +[](int64_t value) {
-    Global::get().frameFixesLimit = value;
+  geode::listenForSettingChanges<bool>("frame_fixes_limit", +[](int64_t value) {
+    Global::get().frameFixesLimit = static_cast<int>( value );
   });
 
-  geode::listenForSettingChanges("lock_delta", +[](bool value) {
+  geode::listenForSettingChanges<bool>("lock_delta", +[](bool value) {
     Global::get().lockDelta = value;
   });
 
-  geode::listenForSettingChanges("auto_stop_playing", +[](bool value) {
+  geode::listenForSettingChanges<bool>("auto_stop_playing", +[](bool value) {
     Global::get().stopPlaying = value;
   });
 
@@ -196,7 +196,7 @@ class $modify(BGLHook, GJBaseGameLayer) {
     bool macroInput = false;
   };
 
-  void processCommands(float dt) {
+  void processCommands(float dt, bool p1, bool p2) {
     auto& g = Global::get();
 
     PlayLayer* pl = PlayLayer::get();
@@ -204,7 +204,7 @@ class $modify(BGLHook, GJBaseGameLayer) {
     if (!pl) {
       // handlePlaying(Global::getCurrentFrame(true));
       // log::debug("{}", Global::getCurrentFrame(true));
-      return GJBaseGameLayer::processCommands(dt);
+      return GJBaseGameLayer::processCommands(dt, p1, p2);
     }
 
     Global::updateSeed();
@@ -229,11 +229,11 @@ class $modify(BGLHook, GJBaseGameLayer) {
       }
 
       if (g.previousFrame == frame && frame != 0 && g.macro.xdBotMacro)
-        return GJBaseGameLayer::processCommands(dt);
+        return GJBaseGameLayer::processCommands(dt, p1, p2);
 
     }
 
-    GJBaseGameLayer::processCommands(dt);
+    GJBaseGameLayer::processCommands(dt, p1, p2);
 
     if (g.state == state::none)
       return;

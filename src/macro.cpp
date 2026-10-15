@@ -224,9 +224,6 @@ Macro Macro::XDtoGDR(std::filesystem::path path) {
         return newMacro;
     }
 
-    bool firstIt = true;
-    bool andr = false;
-
     float fpsMultiplier = 1.f;
 
     while (std::getline(file, line)) {
@@ -234,22 +231,32 @@ Macro Macro::XDtoGDR(std::filesystem::path path) {
         std::stringstream ss(line);
         std::vector<std::string> action;
 
-        while (std::getline(ss, item, '|'))
-            action.push_back(item);
+        while (std::getline(ss, item, '|')) action.push_back(item);
 
-        if (action.size() < 4) {
+        if ( action.empty() ) continue;
+
+        if ( action.size() < 4 )
+        {
             if (action[0] == "android")
                 fpsMultiplier = 4.f;
-            else {
-                int fps = std::stoi(action[0]);
-                fpsMultiplier = 240.f / fps;
+            else
+            {
+                auto fpsResult = geode::utils::numFromString<int>( action[ 0 ] );
+                if ( fpsResult.isOk() && fpsResult.unwrap() > 0 ) fpsMultiplier = 240.f / static_cast<float>( fpsResult.unwrap() );
             }
-
             continue;
         }
 
-        int frame = static_cast<int>(round(std::stoi(action[0]) * fpsMultiplier));
-        int button = std::stoi(action[2]);
+        if (action.size() < 5) continue;
+
+        auto frameResult = geode::utils::numFromString<int>(action[0]);
+        auto buttonResult = geode::utils::numFromString<int>(action[2]);
+
+        if (!frameResult.isOk() || !buttonResult.isOk())continue;
+
+        int frame = static_cast<int>(std::round(frameResult.unwrap() * fpsMultiplier));
+
+        int button = buttonResult.unwrap();
         bool hold = action[1] == "1";
         bool player2 = action[3] == "1";
         bool posOnly = action[4] == "1";
@@ -257,8 +264,17 @@ Macro Macro::XDtoGDR(std::filesystem::path path) {
         if (!posOnly)
             newMacro.inputs.push_back(input(frame, button, player2, hold));
         else {
-            cocos2d::CCPoint p1Pos = ccp(std::stof(action[5]), std::stof(action[6]));
-            cocos2d::CCPoint p2Pos = ccp(std::stof(action[11]), std::stof(action[12]));
+            if (action.size() < 13) continue;
+
+            auto p1x = geode::utils::numFromString<float>(action[5]);
+            auto p1y = geode::utils::numFromString<float>(action[6]);
+            auto p2x = geode::utils::numFromString<float>(action[11]);
+            auto p2y = geode::utils::numFromString<float>(action[12]);
+
+            if (!p1x.isOk() || !p1y.isOk() ||!p2x.isOk() || !p2y.isOk()) continue;
+
+            cocos2d::CCPoint p1Pos = ccp(p1x.unwrap(), p1y.unwrap());
+            cocos2d::CCPoint p2Pos = ccp(p2x.unwrap(), p2y.unwrap());
 
             newMacro.frameFixes.push_back({ frame, {p1Pos, 0.f, false}, {p2Pos, 0.f, false} });
         }

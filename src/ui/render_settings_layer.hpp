@@ -2,7 +2,7 @@
 
 #include "../includes.hpp"
 
-class RenderSettingsLayer : public geode::Popup<>, public TextInputDelegate {
+class RenderSettingsLayer : public geode::Popup, public TextInputDelegate {
 	
 public:
 
@@ -24,12 +24,12 @@ public:
 
 private:
 
-	bool setup() override;
+	bool init( float w, float h, char const* bgTexture );
 
 public:
 
 	STATIC_CREATE(RenderSettingsLayer, 396, 277)
-	
+
 	void open(CCObject*) {
 		create()->show();
 	}

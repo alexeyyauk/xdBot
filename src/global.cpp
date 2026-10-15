@@ -3,10 +3,6 @@
 
 #include <Geode/modify/CCTextInputNode.hpp>
 
-#ifdef GEODE_IS_WINDOWS
-#include <geode.custom-keybinds/include/Keybinds.hpp>
-#endif
-
 #include <random>
 
 class $modify(CCTextInputNode) {
@@ -186,23 +182,6 @@ int Global::getCurrentFrame(bool editor) {
 }
 
 void Global::updateKeybinds() {
-#ifdef GEODE_IS_WINDOWS
-
-  auto& g = Global::get();
-  for (size_t i = 0; i < 6; i++) {
-    auto keys = keybinds::BindManager::get()->getBindsFor(buttonIDs[i]);
-    std::vector<int> keysInts = {};
-
-    for (size_t j = 0; j < keys.size(); j++) {
-      keysInts.push_back(keys[j]->getHash());
-      g.allKeybinds.insert(keys[j]->getHash());
-    }
-
-    g.keybinds[i].clear();
-    for (int k = 0; k < keysInts.size(); k++)
-      g.keybinds[i].push_back(keysInts[k]);
-  }
-#endif
 }
 
 void Global::updateSeed(bool isRestart) {
@@ -213,8 +192,7 @@ void Global::updateSeed(bool isRestart) {
     PlayLayer* pl = PlayLayer::get();
     if (!pl) return;
 
-    unsigned long long ull = std::stoull(g.mod->getSavedValue<std::string>("macro_seed"), nullptr, 0);
-    uintptr_t seed = static_cast<uintptr_t>(ull);
+    uint64_t seed = geode::utils::numFromString<uint64_t>( g.mod->getSavedValue<std::string>( "macro_seed" ) ).unwrapOr( 1 );
     int finalSeed;
 
     if (!pl->m_player1->m_isDead) {
@@ -334,14 +312,10 @@ void Global::frameStepperOff() {
 }
 
 PauseLayer* Global::getPauseLayer() {
-  CCArray* children = CCDirector::sharedDirector()->getRunningScene()->getChildren();
-  CCObject* child;
-  CCARRAY_FOREACH(children, child) {
-    if (PauseLayer* pauseLayer = typeinfo_cast<PauseLayer*>(child))
-      return pauseLayer;
-  }
+  CCScene* scene = CCDirector::sharedDirector()->getRunningScene();
+  if (!scene) return nullptr;
 
-  return nullptr;
+  return scene->getChildByType<PauseLayer>(0);
 }
 
 $execute{
@@ -358,13 +332,13 @@ $execute{
   }
 
   #ifdef GEODE_IS_ANDROID
-  
+
   if (!g.mod->setSavedValue("defaults_set_15", true))
     g.mod->setSavedValue("render_video_args", std::string(""));
-  
+
   if (!g.mod->setSavedValue("defaults_set_11", true))
     g.mod->setSavedValue("render_codec", std::string("libx264"));
-  
+
   #endif
 
   if (!g.mod->setSavedValue("defaults_set_10", true)) {
@@ -374,7 +348,7 @@ $execute{
     g.mod->setSavedValue("autosave_interval", std::to_string(10));
     g.mod->setSavedValue("autosave_checkpoint_enabled", true);
     g.mod->setSavedValue("autosave_levelend_enabled", true);
-    
+
     g.mod->setSavedValue("render_fade_in_video", std::to_string(2));
     g.mod->setSavedValue("render_fade_out_video", std::to_string(2));
 
@@ -465,7 +439,7 @@ $execute{
   g.currentPage = g.mod->getSavedValue<int64_t>("current_page");
 
   g.autosaveInterval = (geode::utils::numFromString<float>(g.mod->getSavedValue<std::string>("autosave_interval")).unwrapOr(0.f) * 60);
-  
+
   g.speedhackEnabled = false;
   g.mod->setSavedValue("macro_speedhack_enabled", false);
 

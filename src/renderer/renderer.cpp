@@ -84,6 +84,7 @@ class $modify(FMODAudioEngine) {
 
         if (path != "playSound_01.ogg" || !Global::get().renderer.recordingAudio)
             return FMODAudioEngine::playEffect(path, speed, p2, volume);
+        return playEffect( path, speed, p2, volume );
     }
 
 };
@@ -232,7 +233,7 @@ void Renderer::start() {
     Mod* mod = Mod::get();
     fmod = FMODAudioEngine::sharedEngine();
 
-    fps = std::stoi(mod->getSavedValue<std::string>("render_fps"));
+    fps = geode::utils::numFromString<int>(mod->getSavedValue<std::string>("render_fps")).unwrapOr(60);
     codec = mod->getSavedValue<std::string>("render_codec");
     bitrate = mod->getSavedValue<std::string>("render_bitrate") + "M";
     extraArgs = mod->getSavedValue<std::string>("render_args");
@@ -254,8 +255,8 @@ void Renderer::start() {
     std::string filename = fmt::format("render_{}_{}{}", std::string_view(pl->m_level->m_levelName), std::to_string(timestamp), extension);
     std::string path = (Mod::get()->getSettingValue<std::filesystem::path>("render_folder") / filename).string();
 
-    width = std::stoi(mod->getSavedValue<std::string>("render_width2"));
-    height = std::stoi(mod->getSavedValue<std::string>("render_height"));
+    width = geode::utils::numFromString<int>(mod->getSavedValue<std::string>("render_width2")).unwrapOr( 1920 );
+    height = geode::utils::numFromString<int>(mod->getSavedValue<std::string>("render_height")).unwrapOr( 1080 );
 
     if (width % 2 != 0)
         width++;
@@ -772,8 +773,9 @@ void Renderer::startAudio(PlayLayer* pl) {
     if (dontRecordAudio) return;
 
     if (pl->m_levelEndAnimationStarted && endLevelLayer != nullptr) {
-        CCKeyboardDispatcher::get()->dispatchKeyboardMSG(enumKeyCodes::KEY_Space, true, false);
-        CCKeyboardDispatcher::get()->dispatchKeyboardMSG(enumKeyCodes::KEY_Space, false, false);
+        const auto ts = geode::utils::getInputTimestamp();
+        CCKeyboardDispatcher::get()->dispatchKeyboardMSG(enumKeyCodes::KEY_Space, true, false, ts);
+        CCKeyboardDispatcher::get()->dispatchKeyboardMSG(enumKeyCodes::KEY_Space, false, false, ts);
     }
     else if (!pl->m_levelEndAnimationStarted) {
 

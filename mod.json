@@ -1,23 +1,27 @@
 {
-	"geode": "4.4.0",
+	"geode": "5.11.1",
 	"gd": {
-		"win": "2.2074",
-		"android": "2.2074"
+		"win": "2.2081",
+		"android": "2.2081"
 	},
-	"version": "2.4.1",
+	"version": "2.4.2",
 	"id": "zilko.xdbot",
 	"name": "xdBot",
 	"developer": "Zilko",
 	"description": "Best Free Bot fr",
-	"dependencies": [
-		{
-			"id": "geode.custom-keybinds",
-			"version": ">=v1.10.0",
-			"importance": "required",
-			"platforms": ["win"]
-		}
-	],
+	"dependencies": {
+		"eclipse.ffmpeg-api": { "version": ">=2.0.0", "required": false }
+	},
 	"settings": {
+		"open_menu":            { "type": "keybind", "name": "Open Menu",            "default": "Alt+F", "platforms": ["win"] },
+		"toggle_recording":     { "type": "keybind", "name": "Record macro",         "default": "Alt+G", "platforms": ["win"] },
+		"toggle_playing":       { "type": "keybind", "name": "Play macro",           "default": "Alt+H", "platforms": ["win"] },
+		"toggle_speedhack":     { "type": "keybind", "name": "Speedhack",            "default": "Alt+S", "platforms": ["win"] },
+		"toggle_noclip":        { "type": "keybind", "name": "NoClip",               "default": "Alt+N", "platforms": ["win"] },
+		"toggle_frame_stepper": { "type": "keybind", "name": "Toggle Frame Stepper", "default": "Alt+C", "platforms": ["win"] },
+		"step_frame":           { "type": "keybind", "name": "Advance frame",        "default": "V",     "platforms": ["win"] },
+		"show_trajectory":      { "type": "keybind", "name": "Show Trajectory",      "default": "Alt+T", "platforms": ["win"] },
+		"toggle_render":        { "type": "keybind", "name": "Render",               "default": "Alt+P", "platforms": ["win"] },
 		"button-setting": {
 			"type": "custom:button",
 			"name": "Open Menu"
