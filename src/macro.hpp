@@ -78,7 +78,7 @@ public:
 };
 
 struct button {
-    int button;
+    int button_id;
     bool player2;
     bool down;
 };

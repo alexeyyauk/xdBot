@@ -48,7 +48,7 @@ std::vector<button> InputPracticeFixes::findButtons() {
 	for (auto it = g.macro.inputs.rbegin(); it != g.macro.inputs.rend(); ++it) {
 		bool breakIteration = false;
 		for (auto& el : result) {
-			if (el.button == it->button && el.player2 == it->player2) {
+			if (el.button_id == it->button && el.player2 == it->player2) {
 				breakIteration = true;
 				break;
 			}
@@ -75,7 +75,7 @@ std::vector<int> InputPracticeFixes::fixInputs(std::vector<button> foundButtons,
 	for (auto& it : foundButtons) {
 		bool player2 = twoPlayers ? (Macro::flipControls() ? it.player2 : !it.player2) : false;
 
-		int btnIndex = twoPlayers ? (it.button - 1 + (3 * static_cast<int>(player2))) : (it.button - 1);
+		int btnIndex = twoPlayers ? (it.button_id - 1 + (3 * static_cast<int>(player2))) : (it.button_id - 1);
 		bool jumpBtn = btnIndex == 0 || btnIndex == 3;
 
 		if (it.down && jumpBtn && (p1Data.m_isRobot || p2Data.m_isRobot)) {
@@ -115,7 +115,7 @@ std::vector<int> InputPracticeFixes::fixInputs(std::vector<button> foundButtons,
 		
 		if (!it.down && holdingButton) {
 			if (btnIndex != 0 && btnIndex != 3) {
-				g.macro.inputs.push_back(input(frame, it.button, player2, true));
+				g.macro.inputs.push_back(input(frame, it.button_id, player2, true));
 			}
 			else
 				g.delayedFrameInput[static_cast<int>(player2)] = frame + 2;
@@ -129,7 +129,7 @@ std::vector<int> InputPracticeFixes::fixInputs(std::vector<button> foundButtons,
 			else {
 				bool rightKey = static_cast<bool>(btnIndex > 3 ? btnIndex - 4 : btnIndex - 1);
 				if (g.heldButtons[btnIndex + (rightKey ? -1 : 1)]) {
-					g.macro.inputs.push_back(input(frame, it.button, player2, false));
+					g.macro.inputs.push_back(input(frame, it.button_id, player2, false));
 				}
 				else {
 					g.delayedFrameRelease[static_cast<int>(player2)][static_cast<int>(rightKey)] = frame + 2;
